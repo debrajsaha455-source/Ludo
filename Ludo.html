@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>My Ludo Game</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#101827,#312e81);
+    color:white;
+    font-family:Arial,sans-serif;
+    display:flex;
+    justify-content:center;
+    padding:15px;
+}
+
+.game{
+    width:100%;
+    max-width:650px;
+}
+
+h1{
+    text-align:center;
+    font-size:42px;
+    margin-bottom:5px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#c7d2fe;
+    margin-bottom:15px;
+}
+
+.top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+}
+
+#message{
+    font-size:17px;
+    font-weight:bold;
+}
+
+button{
+    border:none;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+#newGame{
+    background:#6366f1;
+    color:white;
+    padding:10px 15px;
+    border-radius:10px;
+}
+
+.board{
+    width:min(94vw,600px);
+    height:min(94vw,600px);
+    margin:auto;
+
+    display:grid;
+    grid-template-columns:repeat(15,1fr);
+    grid-template-rows:repeat(15,1fr);
+
+    background:#e5e7eb;
+
+    border:6px solid #111827;
+    border-radius:15px;
+    overflow:hidden;
+
+    box-shadow:0 15px 40px #0008;
+}
+
+.cell{
+    position:relative;
+    border:1px solid #cbd5e1;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:white;
+}
+
+.red-home{
+    background:#fecaca;
+}
+
+.green-home{
+    background:#bbf7d0;
+}
+
+.yellow-home{
+    background:#fef08a;
+}
+
+.blue-home{
+    background:#bfdbfe;
+}
+
+.path{
+    background:#ffffff;
+}
+
+.safe{
+    background:#e0e7ff;
+}
+
+.safe::after{
+    content:"★";
+    color:#64748b;
+    font-size:clamp(8px,2vw,16px);
+}
+
+.center{
+    background:
+    conic-gradient(
+        #ef4444 0deg 90deg,
+        #22c55e 90deg 180deg,
+        #facc15 180deg 270deg,
+        #3b82f6 270deg 360deg
+    );
+}
+
+.token{
+    width:75%;
+    height:75%;
+
+    border-radius:50%;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    color:white;
+    font-size:clamp(8px,2vw,14px);
+    font-weight:bold;
+
+    border:2px solid white;
+
+    box-shadow:
+        0 2px 5px #0008;
+
+    cursor:pointer;
+
+    position:absolute;
+    z-index:5;
+
+    transition:.15s;
+}
+
+.token:hover{
+    transform:scale(1.15);
+}
+
+.token.red{
+    background:#ef4444;
+}
+
+.token.green{
+    background:#22c55e;
+}
+
+.token.yellow{
+    background:#eab308;
+}
+
+.token.blue{
+    background:#3b82f6;
+}
+
+.selectable{
+    animation:bounce .6s infinite alternate;
+}
+
+@keyframes bounce{
+
+    from{
+        transform:scale(1);
+    }
+
+    to{
+        transform:scale(1.15);
+    }
+
+}
+
+.info{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:7px;
+
+    margin-top:15px;
+}
+
+.player{
+    padding:9px 3px;
+
+    background:#ffffff12;
+
+    border-radius:10px;
+
+    text-align:center;
+
+    font-size:13px;
+}
+
+.player.active{
+    outline:2px solid white;
+    background:#ffffff25;
+}
+
+.dice-area{
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    gap:15px;
+
+    margin-top:15px;
+}
+
+#dice{
+
+    width:65px;
+    height:65px;
+
+    background:white;
+
+    color:#111827;
+
+    border-radius:15px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-size:40px;
+
+    box-shadow:0 5px 15px #0005;
+}
+
+#roll{
+
+    padding:13px 22px;
+
+    border-radius:12px;
+
+    background:#8b5cf6;
+
+    color:white;
+
+    font-size:16px;
+}
+
+#roll:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+#log{
+
+    text-align:center;
+
+    min-height:35px;
+
+    margin-top:12px;
+
+    color:#cbd5e1;
+
+    font-size:13px;
+}
+
+.rules{
+
+    margin-top:10px;
+
+    text-align:center;
+
+    color:#94a3b8;
+
+    font-size:12px;
+
+    line-height:1.5;
+}
+
+@media(max-width:420px){
+
+    h1{
+        font-size:32px;
+    }
+
+    .board{
+        border-width:3px;
+    }
+
+    .top{
+        align-items:flex-start;
+    }
+
+    #message{
+        font-size:14px;
+    }
+
+    .player{
+        font-size:11px;
+    }
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<div class="game">
+
+<h1>🎲 LUDO</h1>
+
+<div class="subtitle">
+    You 🔴 vs Green 🟢 vs Yellow 🟡 vs Blue 🔵
+</div>
+
+
+<div class="top">
+
+    <div id="message">
+        Your turn — roll the dice
+    </div>
+
+    <button id="newGame">
+        🔄 New Game
+    </button>
+
+</div>
+
+
+<div id="board" class="board"></div>
+
+
+<div class="info">
+
+    <div id="player0" class="player active">
+        🔴 YOU
+    </div>
+
+    <div id="player1" class="player">
+        🟢 BOT
+    </div>
+
+    <div id="player2" class="player">
+        🟡 BOT
+    </div>
+
+    <div id="player3" class="player">
+        🔵 BOT
+    </div>
+
+</div>
+
+
+<div class="dice-area">
+
+    <div id="dice">–</div>
+
+    <button id="roll">
+        🎲 Roll Dice
+    </button>
+
+</div>
+
+
+<div id="log">
+    Roll a 6 to bring a token out of base.
+</div>
+
+
+<div class="rules">
+
+    <b>How to play:</b>
+    Roll 6 to leave base.
+    Move your token by clicking it.
+    Capture enemy tokens by landing on them.
+    ★ squares are safe.
+    Roll 6 for another turn.
+    Get all 4 tokens home to win!
+
+</div>
+
+</div>
+
+
+
+<script>
+
+/* ==========================================
+   GAME DATA
+========================================== */
+
+const COLORS = [
+    "red",
+    "green",
+    "yellow",
+    "blue"
+];
+
+const NAMES = [
+    "You",
+    "Green Bot",
+    "Yellow Bot",
+    "Blue Bot"
+];
+
+
+/*
+    Main 52-square Ludo track.
+
+    Each item is:
+
+    [row,column]
+
+*/
+
+const PATH = [
+
+    [6,0],
+    [6,1],
+    [6,2],
+    [6,3],
+    [6,4],
+    [6,5],
+
+    [5,6],
+    [4,6],
+    [3,6],
+    [2,6],
+    [1,6],
+    [0,6],
+
+    [0,7],
+
+    [0,8],
+    [1,8],
+    [2,8],
+    [3,8],
+    [4,8],
+    [5,8],
+
+    [6,9],
+    [6,10],
+    [6,11],
+    [6,12],
+    [6,13],
+    [6,14],
+
+    [7,14],
+
+    [8,14],
+    [8,13],
+    [8,12],
+    [8,11],
+    [8,10],
+    [8,9],
+
+    [9,8],
+    [10,8],
+    [11,8],
+    [12,8],
+    [13,8],
+    [14,8],
+
+    [14,7],
+
+    [14,6],
+    [13,6],
+    [12,6],
+    [11,6],
+    [10,6],
+    [9,6],
+
+    [8,5],
+    [8,4],
+    [8,3],
+    [8,2],
+    [8,1],
+    [8,0],
+
+    [7,0]
+
+];
+
+
+/*
+    Starting position for each player
+*/
+
+const START = [
+
+    0,
+    13,
+    26,
+    39
+
+];
+
+
+/*
+    Safe squares
+*/
+
+const SAFE = new Set([
+    0,
+    8,
+    13,
+    21,
+    26,
+    34,
+    39,
+    47
+]);
+
+
+/*
+    Game state
+
+    -1 = base
+
+    0-51 = main track
+
+    52-56 = home lane
+
+    57 = finished
+*/
+
+let tokens = [
+
+    [-1,-1,-1,-1],
+
+    [-1,-1,-1,-1],
+
+    [-1,-1,-1,-1],
+
+    [-1,-1,-1,-1]
+
+];
+
+
+let currentPlayer = 0;
+
+let diceValue = 0;
+
+let hasRolled = false;
+
+let gameOver = false;
+
+let botThinking = false;
+
+
+
+/* ==========================================
+   ELEMENTS
+========================================== */
+
+const board =
+    document.getElementById("board");
+
+const message =
+    document.getElementById("message");
+
+const dice =
+    document.getElementById("dice");
+
+const rollButton =
+    document.getElementById("roll");
+
+const log =
+    document.getElementById("log");
+
+const newGameButton =
+    document.getElementById("newGame");
+
+
+
+/* ==========================================
+   CREATE BOARD
+========================================== */
+
+function createBoard(){
+
+    board.innerHTML = "";
+
+    for(let row=0; row<15; row++){
+
+        for(let col=0; col<15; col++){
+
+            const cell =
+                document.createElement("div");
+
+            cell.className = "cell";
+
+
+            /*
+                Four home areas
+            */
+
+            if(row < 6 && col < 6){
+
+                cell.classList.add(
+                    "red-home"
+                );
+
+            }
+
+            if(row < 6 && col > 8){
+
+                cell.classList.add(
+                    "green-home"
+                );
+
+            }
+
+            if(row > 8 && col > 8){
+
+                cell.classList.add(
+                    "yellow-home"
+                );
+
+            }
+
+            if(row > 8 && col < 6){
+
+                cell.classList.add(
+                    "blue-home"
+                );
+
+            }
+
+
+            /*
+                Main path
+            */
+
+            const pathIndex =
+                PATH.findIndex(
+                    position =>
+                        position[0] === row &&
+                        position[1] === col
+                );
+
+
+            if(pathIndex !== -1){
+
+                cell.className =
+                    "cell path";
+
+                cell.dataset.path =
+                    pathIndex;
+
+
+                if(
+                    SAFE.has(pathIndex)
+                ){
+
+                    cell.classList.add(
+                        "safe"
+                    );
+
+                }
+
+            }
+
+
+            /*
+                Center
+            */
+
+            if(
+                row >= 6 &&
+                row <= 8 &&
+                col >= 6 &&
+                col <= 8
+            ){
+
+                cell.className =
+                    "cell center";
+
+            }
+
+
+            board.appendChild(cell);
+
+        }
+
+    }
+
+    renderTokens();
+
+}
+
+
+
+/* ==========================================
+   GET CELL
+========================================== */
+
+function getCell(row,col){
+
+    return board.children[
+        row * 15 + col
+    ];
+
+}
+
+
+
+/* ==========================================
+   TOKEN BASE POSITIONS
+========================================== */
+
+const BASE_POSITIONS = [
+
+    [
+        [2,2],
+        [2,4],
+        [4,2],
+        [4,4]
+    ],
+
+    [
+        [2,10],
+        [2,12],
+        [4,10],
+        [4,12]
+    ],
+
+    [
+        [10,10],
+        [10,12],
+        [12,10],
+        [12,12]
+    ],
+
+    [
+        [10,2],
+        [10,4],
+        [12,2],
+        [12,4]
+    ]
+
+];
+
+
+
+/* ==========================================
+   HOME LANES
+========================================== */
+
+const HOME_LANES = [
+
+    [
+        [7,1],
+        [7,2],
+        [7,3],
+        [7,4],
+        [7,5]
+    ],
+
+    [
+        [1,7],
+        [2,7],
+        [3,7],
+        [4,7],
+        [5,7]
+    ],
+
+    [
+        [7,13],
+        [7,12],
+        [7,11],
+        [7,10],
+        [7,9]
+    ],
+
+    [
+        [13,7],
+        [12,7],
+        [11,7],
+        [10,7],
+        [9,7]
+    ]
+
+];
+
+
+
+/* ==========================================
+   GET MAIN TRACK POSITION
+========================================== */
+
+function getPathIndex(
+    player,
+    progress
+){
+
+    if(
+        progress < 0 ||
+        progress > 51
+    ){
+
+        return null;
+
+    }
+
+    return (
+        START[player] +
+        progress
+    ) % 52;
+
+}
+
+
+
+/* ==========================================
+   RENDER TOKENS
+========================================== */
+
+function renderTokens(){
+
+    document
+        .querySelectorAll(".token")
+        .forEach(
+            token => token.remove()
+        );
+
+
+    for(
+        let player=0;
+        player<4;
+        player++
+    ){
+
+        for(
+            let tokenNumber=0;
+            tokenNumber<4;
+            tokenNumber++
+        ){
+
+            const progress =
+                tokens[player][tokenNumber];
+
+
+            const token =
+                document.createElement("div");
+
+
+            token.className =
+                "token " +
+                COLORS[player];
+
+
+            token.textContent =
+                tokenNumber + 1;
+
+
+            /*
+                Can player move this token?
+            */
+
+            if(
+                player === 0 &&
+                hasRolled &&
+                canMove(
+                    player,
+                    tokenNumber,
+                    diceValue
+                )
+            ){
+
+                token.classList.add(
+                    "selectable"
+                );
+
+            }
+
+
+            /*
+                Token position
+            */
+
+            let row;
+            let col;
+
+
+            if(progress === -1){
+
+                /*
+                    In base
+                */
+
+                [
+                    row,
+                    col
+                ] =
+                    BASE_POSITIONS[
+                        player
+                    ][tokenNumber];
+
+            }
+
+            else if(
+                progress >= 0 &&
+                progress <= 51
+            ){
+
+                const pathIndex =
+                    getPathIndex(
+                        player,
+                        progress
+                    );
+
+
+                [
+                    row,
+                    col
+                ] =
+                    PATH[pathIndex];
+
+            }
+
+            else if(
+                progress >= 52 &&
+                progress <= 56
+            ){
+
+                [
+                    row,
+                    col
+                ] =
+                    HOME_LANES[player]
+                    [progress - 52];
+
+            }
+
+            else{
+
+                /*
+                    Finished tokens
+                    stay around center
+                */
+
+                row = 7;
+                col = 7;
+
+            }
+
+
+            getCell(row,col)
+                .appendChild(token);
+
+
+            token.addEventListener(
+                "click",
+                () => {
+
+                    if(
+                        player === 0 &&
+                        currentPlayer === 0 &&
+                        hasRolled &&
+                        canMove(
+                            0,
+                            tokenNumber,
+                            diceValue
+                        )
+                    ){
+
+                        moveToken(
+                            0,
+                            tokenNumber
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+
+    }
+
+}
+
+
+
+/* ==========================================
+   CAN MOVE?
+========================================== */
+
+function canMove(
+    player,
+    tokenNumber,
+    dice
+){
+
+    const position =
+        tokens[player][tokenNumber];
+
+
+    /*
+        Finished
+    */
+
+    if(position === 57){
+
+        return false;
+
+    }
+
+
+    /*
+        Token in base
+    */
+
+    if(position === -1){
+
+        return dice === 6;
+
+    }
+
+
+    /*
+        Can't go beyond home
+    */
+
+    if(
+        position + dice > 57
+    ){
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+
+/* ==========================================
+   GET LEGAL MOVES
+========================================== */
+
+function getLegalMoves(
+    player,
+    dice
+){
+
+    const moves = [];
+
+
+    for(
+        let i=0;
+        i<4;
+        i++
+    ){
+
+        if(
+            canMove(
+                player,
+                i,
+                dice
+            )
+        ){
+
+            moves.push(i);
+
+        }
+
+    }
+
+
+    return moves;
+
+}
+
+
+
+/* ==========================================
+   MOVE TOKEN
+========================================== */
+
+function moveToken(
+    player,
+    tokenNumber
+){
+
+    if(gameOver) return;
+
+    const dice =
+        diceValue;
+
+
+    const oldPosition =
+        tokens[player][tokenNumber];
+
+
+    /*
+        Leave base
+    */
+
+    if(oldPosition === -1){
+
+        tokens[player][tokenNumber] =
+            0;
+
+    }
+
+    else{
+
+        tokens[player][tokenNumber] +=
+            dice;
+
+    }
+
+
+    /*
+        Capture
+    */
+
+    const captured =
+        captureEnemies(
+            player,
+            tokenNumber
+        );
+
+
+    renderTokens();
+
+
+    /*
+        Check winner
+    */
+
+    if(
+        checkWinner(player)
+    ){
+
+        gameOver = true;
+
+        if(player === 0){
+
+            message.textContent =
+                "🏆 YOU WIN!";
+
+            log.textContent =
+                "Amazing! You got all four tokens home!";
+
+        }
+
+        else{
+
+            message.textContent =
+                "🤖 " +
+                COLORS[player].toUpperCase() +
+                " BOT WINS!";
+
+            log.textContent =
+                "The bot got all four tokens home.";
+
+        }
+
+        rollButton.disabled = true;
+
+        return;
+
+    }
+
+
+    /*
+        Reset roll
+    */
+
+    hasRolled = false;
+
+    rollButton.disabled = true;
+
+
+    /*
+        Rolling a six gives another turn
+    */
+
+    if(dice === 6){
+
+        log.textContent =
+            captured ?
+            "💥 Capture! You rolled a 6 — roll again." :
+            "🎲 You rolled a 6 — roll again!";
+
+
+        if(player === 0){
+
+            message.textContent =
+                "Your extra turn!";
+
+            rollButton.disabled =
+                false;
+
+        }
+
+        else{
+
+            setTimeout(
+                botTurn,
+                700
+            );
+
+        }
+
+        return;
+
+    }
+
+
+    /*
+        Next player
+    */
+
+    nextPlayer();
+
+}
+
+
+
+/* ==========================================
+   CAPTURE
+========================================== */
+
+function captureEnemies(
+    player,
+    tokenNumber
+){
+
+    const position =
+        tokens[player][tokenNumber];
+
+
+    if(
+        position < 0 ||
+        position > 51
+    ){
+
+        return false;
+
+    }
+
+
+    const pathIndex =
+        getPathIndex(
+            player,
+            position
+        );
+
+
+    /*
+        Safe square cannot capture
+    */
+
+    if(
+        SAFE.has(pathIndex)
+    ){
+
+        return false;
+
+    }
+
+
+    let captured = false;
+
+
+    for(
+        let enemy=0;
+        enemy<4;
+        enemy++
+    ){
+
+        if(enemy === player)
+            continue;
+
+
+        for(
+            let t=0;
+            t<4;
+            t++
+        ){
+
+            const enemyPosition =
+                tokens[enemy][t];
+
+
+            if(
+                enemyPosition >= 0 &&
+                enemyPosition <= 51
+            ){
+
+                const enemyPath =
+                    getPathIndex(
+                        enemy,
+                        enemyPosition
+                    );
+
+
+                if(
+                    enemyPath === pathIndex
+                ){
+
+                    tokens[enemy][t] =
+                        -1;
+
+                    captured = true;
+
+                }
+
+            }
+
+        }
+
+    }
+
+
+    return captured;
+
+}
+
+
+
+/* ==========================================
+   WINNER
+========================================== */
+
+function checkWinner(player){
+
+    return tokens[player]
+        .every(
+            position =>
+                position === 57
+        );
+
+}
+
+
+
+/* ==========================================
+   NEXT PLAYER
+========================================== */
+
+function nextPlayer(){
+
+    currentPlayer =
+        (currentPlayer + 1) % 4;
+
+
+    diceValue = 0;
+
+    dice.textContent = "–";
+
+
+    updateUI();
+
+
+    if(currentPlayer === 0){
+
+        message.textContent =
+            "Your turn — roll the dice";
+
+        rollButton.disabled =
+            false;
+
+    }
+
+    else{
+
+        rollButton.disabled =
+            true;
+
+        setTimeout(
+            botTurn,
+            800
+        );
+
+    }
+
+}
+
+
+
+/* ==========================================
+   ROLL DICE
+========================================== */
+
+rollButton.addEventListener(
+    "click",
+    rollDice
+);
+
+
+function rollDice(){
+
+    if(
+        gameOver ||
+        currentPlayer !== 0 ||
+        hasRolled
+    ){
+
+        return;
+
+    }
+
+
+    diceValue =
+        Math.floor(
+            Math.random() * 6
+        ) + 1;
+
+
+    dice.textContent =
+        [
+            "",
+            "⚀",
+            "⚁",
+            "⚂",
+            "⚃",
+            "⚄",
+            "⚅"
+        ][diceValue];
+
+
+    hasRolled = true;
+
+
+    const moves =
+        getLegalMoves(
+            0,
+            diceValue
+        );
+
+
+    if(moves.length === 0){
+
+        log.textContent =
+            "No legal move.";
+
+        hasRolled = false;
+
+        rollButton.disabled =
+            true;
+
+
+        setTimeout(
+            nextPlayer,
+            700
+        );
+
+        return;
+
+    }
+
+
+    log.textContent =
+        "Choose a highlighted token.";
+
+
+    renderTokens();
+
+
+    /*
+        If only one move is possible,
+        automatically move it.
+    */
+
+    if(moves.length === 1){
+
+        setTimeout(
+            () => moveToken(
+                0,
+                
