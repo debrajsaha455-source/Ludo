@@ -1,0 +1,41 @@
+name: Deploy Ludo Game to GitHub Pages
+
+# কখন এই অ্যাকশনটি রান করবে তা নির্ধারণ করা
+on:
+  push:
+    branches: ["main"] # আপনার ব্রাঞ্চের নাম যদি 'master' হয়, তবে এখানে 'master' লিখবেন
+  workflow_dispatch: # ম্যানুয়ালি রান করার জন্য
+
+# গিটহাব পেজেস-এ ডিপ্লয় করার জন্য প্রয়োজনীয় পারমিশন
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# একই সাথে একাধিক বিল্ড যেন না হয় তা নিশ্চিত করা
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.' # আপনার ফোল্ডারের সব ফাইল আপলোড করবে
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
